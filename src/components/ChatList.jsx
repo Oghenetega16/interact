@@ -1,8 +1,27 @@
 import { SlidersHorizontal, Search } from "lucide-react"
+import chatData from '../data/chats';
+import { useEffect, useMemo, useState } from "react";
+import { formatTimestamp } from '../utils/formatTimestamp'
 
 export default function ChatList() {
+
+    const [chats, setChats] = useState([]);
+    
+    useEffect(() => {
+        setChats(chatData)
+    }, [])
+
+    const sortedChats = useMemo(() => {
+        return [...chats].sort((a, b) => {
+            const aTimestamp = a.lastMessageTimestamp.seconds + a.lastMessageTimestamp.nanoseconds / 1e9;
+            const bTimestamp = b.lastMessageTimestamp.seconds + b.lastMessageTimestamp.nanoseconds / 1e9;
+
+            return bTimestamp - aTimestamp;
+        })
+    }, [chats])
+
     return (
-        <section className="p-5 sm:w-[400px] sm:flex sm:flex-col sm:justify-left">
+        <section className="p-5 sm:w-[490px] sm:flex sm:flex-col sm:justify-left">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl">Chats</h1>
                 <SlidersHorizontal />
@@ -11,28 +30,25 @@ export default function ChatList() {
                 <Search className="w-6 h-6 text-gray-700 ml-4" />
                 <input type="text" placeholder="Search" className="px-4 h-full w-full py-2 rounded-r-lg outline-none" />
             </div>
-
-            <section className="flex justify-between items-center py-4 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                    <div className="w-13 h-13 flex items-center justify-center text-lg rounded-full text-white bg-emerald-600">OS</div>
-                    <div>
-                        <h1 className="font-semibold">Oghenetega Sukuru</h1>
-                        <p className="text-sm">Bro, what's up?</p>
+                
+            {sortedChats.map((chat) => (
+                <section key={chat.id} className="py-4 border-b border-gray-200">
+                    <div className="w-full">
+                        {chat?.users?.filter((user) => user?.email !== "baxo@mailinator.com")?.map((user) => (
+                            <div className="flex justify-between items-center ">
+                                <div className="flex items-center gap-3">
+                                    <img src={user.image} alt="" className="w-13 h-13 rounded-full object-cover" />
+                                    <div>
+                                        <h1 className="font-semibold">{user.fullName}</h1>
+                                        <p className="text-sm w-[300px] line-clamp-1">{chat.lastMessage}</p>
+                                    </div>
+                                </div>
+                                <span className="text-xs">{formatTimestamp(chat.lastMessageTimestamp)}</span>
+                            </div>
+                        ))}
                     </div>
-                </div>
-                <span className="text-xs">8 July, 2025</span>
-            </section>
-
-            <section className="flex justify-between items-center py-4 border-b border-gray-200">
-                <div className="flex items-center gap-3">
-                    <div className="w-13 h-13 flex items-center justify-center text-lg rounded-full text-white bg-lime-700">AM</div>
-                    <div>
-                        <h1 className="font-semibold">Alabi Mojoyin</h1>
-                        <p className="text-sm">Where are you?</p>
-                    </div>
-                </div>
-                <span className="text-xs">2 July, 2025</span>
-            </section>
+                </section>
+            ))} 
         </section>
     )
 }
