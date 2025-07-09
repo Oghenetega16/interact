@@ -21,7 +21,7 @@ export default function ChatList() {
     }, [chats])
 
     return (
-        <section className="p-5 sm:w-[490px] sm:flex sm:flex-col sm:justify-left">
+        <section className="p-5 sm:w-[490px] lg:w-[800px] sm:flex sm:flex-col sm:justify-left overflow-y-scroll">
             <div className="flex items-center justify-between">
                 <h1 className="text-2xl">Chats</h1>
                 <SlidersHorizontal />
@@ -40,7 +40,7 @@ export default function ChatList() {
                                     <img src={user.image} alt="" className="w-13 h-13 rounded-full object-cover" />
                                     <div>
                                         <h1 className="font-semibold">{user.fullName}</h1>
-                                        <p className="text-sm w-[300px] line-clamp-1">{chat.lastMessage}</p>
+                                        <p className="text-sm w-[150px] sm:w-[300px] line-clamp-1">{chat.lastMessage}</p>
                                     </div>
                                 </div>
                                 <span className="text-xs">{formatTimestamp(chat.lastMessageTimestamp)}</span>
