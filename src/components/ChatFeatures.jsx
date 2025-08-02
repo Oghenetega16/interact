@@ -14,14 +14,13 @@ export default function ChatFeatures() {
     ];
 
     return (
-        <section className="bg-cyan-200 flex items-center justify-center py-6 sm:px-8 sm:justify-between lg:flex-col lg:justify-start">
-            <div className="p-2 bg-cyan-950 rounded-xl mr-4 lg:mr-0">
+        <section className="bg-cyan-200 flex items-center justify-center py-6 sm:w-fit sm:px-8 sm:flex-col sm:justify-start">
+            <div className="p-2 bg-cyan-950 rounded-xl mr-4 sm:mr-0">
                 <FaHandshake className="w-6 h-6 text-white" />
             </div>
 
-            <div className="flex flex-row gap-2 sm:gap-4 lg:flex-col lg:h-full lg:justify-between lg:py-8">
-                
-                <div className="flex flex-row lg:flex-col gap-2 sm:gap-4">
+            <div className="flex flex-row gap-2 sm:gap-4 sm:flex-col sm:h-full sm:justify-between sm:py-8">
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-4">
                     {icons.slice(0, 4).map((item) => {
                         const Icon = iconMap[item.icon];
                         return (
@@ -37,7 +36,7 @@ export default function ChatFeatures() {
                     })}
                 </div>
 
-                <div className="flex flex-row lg:flex-col gap-2 sm:gap-4">
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-4">
                     {icons.slice(4).map((item) => {
                         const Icon = iconMap[item.icon];
                         return (

@@ -1,64 +1,79 @@
 import { useState } from 'react';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Brain, Eye, EyeOff, Mail, Lock } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { FaHandshake } from 'react-icons/fa';
-import { auth, googleProvider } from ".././services/firebase";
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import useChatStore from "../store/chatStore";
+import useChatStore from "./chatStore";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
-    const [firebaseError, setFirebaseError] = useState(null);
     const [formData, setFormData] = useState({
         email: '',
         password: ''
     });
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
-    const navigate = useNavigate();
 
     const handleInputChange = (e) => {
         setFormData({
             ...formData,
             [e.target.name]: e.target.value
         });
+        // Clear error when user starts typing
+        if (error) setError('');
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setFirebaseError(null);
         setIsLoading(true);
-        
-        try {
-            const { user } = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-            if (!user.emailVerified) {
-                alert("Please verify your email before logging in.");
-                return;
-            }
+        setError('');
 
-            // Use callback if provided, otherwise navigate directly
-            if (onLoginSuccess) {
-                onLoginSuccess();
-            } else {
-                navigate('/chat');
-            }
+        try {
+            // For now, simulate a successful login
+            // Replace this with your actual authentication logic
             
-        } catch (error) {
-            if (error) {
-                if (error.code === 'auth/user-not-found') {
-                    setFirebaseError("No account found with this email.");
-                } else if (error.code === 'auth/wrong-password') {
-                    setFirebaseError("Incorrect password.");
-                } else {
-                    setFirebaseError(error.message);
-                }
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            // Mock successful login response
+            const mockUser = {
+                id: '1',
+                email: formData.email,
+                fullName: 'John Doe',
+                image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+                token: 'mock-jwt-token-' + Date.now()
+            };
+
+            // Update store with user data (this automatically sets isAuthenticated to true)
+            useChatStore.getState().setCurrentUser(mockUser);
+            
+            console.log('Login successful:', mockUser);
+
+            // TODO: Replace the above mock code with your actual API call:
+            /*
+            const response = await fetch('YOUR_LOGIN_API_ENDPOINT', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                // Successful login - update store
+                useChatStore.getState().setCurrentUser(data.user);
             } else {
-                setFirebaseError("An unexpected error occurred.");
+                setError(data.message || 'Login failed. Please try again.');
             }
-            } finally {
-                setIsLoading(false);
-            }
+            */
+        } catch (error) {
+            console.error('Login error:', error);
+            setError('Login failed. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleGoogleLogin = () => {
@@ -133,10 +148,6 @@ export default function Login() {
                                 </button>
                             </div>
                         </div>
-
-                        {firebaseError && (
-                            <p className="text-sm text-red-400 text-center">{firebaseError}</p>
-                        )}
 
                         <div className="flex items-center justify-between">
                             <label className="flex items-center">
