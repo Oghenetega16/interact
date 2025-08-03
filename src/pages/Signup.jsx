@@ -2,14 +2,20 @@ import { useState } from "react";
 import { Eye, EyeOff, Mail, Lock, User, AtSign } from "lucide-react";
 import { Link } from "react-router-dom";
 import { FaHandshake } from 'react-icons/fa';
-import useChatStore from "../store/chatStore";
+import { useNavigate } from "react-router-dom";
+import { auth, db } from "../services/firebase"; 
+import { createUserWithEmailAndPassword, sendEmailVerification } from "firebase/auth";
+import { FirebaseError } from "firebase/app";
+import { doc, setDoc } from "firebase/firestore";
+import toast from "react-hot-toast";
 
 export default function Signup() {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
-    const [userData, setUserData] = useState({
+    const [errors, setErrors] = useState('');
+    const [firebaseError, setFirebaseError] = useState(null);
+    const [formData, setFormData] = useState({
         fullName: "",
         username: "",
         email: "",
@@ -17,116 +23,112 @@ export default function Signup() {
         confirmPassword: ""
     });
 
-    const handleChange = (event) => {
-        const { name, value } = event.target;
-        setUserData((prev) => ({
-            ...prev,
-            [name]: value
-        }));
-        // Clear error when user starts typing
-        if (error) setError('');
+    const navigate = useNavigate();
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    const handleChange = (e) => {
+        setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
-    const validateForm = () => {
-        // Basic validation
-        if (!userData.fullName.trim()) {
-            setError('Full name is required');
-            return false;
-        }
-        if (!userData.username.trim()) {
-            setError('Username is required');
-            return false;
-        }
-        if (userData.username.length < 3) {
-            setError('Username must be at least 3 characters long');
-            return false;
-        }
-        if (!userData.email.trim()) {
-            setError('Email is required');
-            return false;
-        }
-        if (!/\S+@\S+\.\S+/.test(userData.email)) {
-            setError('Please enter a valid email address');
-            return false;
-        }
-        if (!userData.password) {
-            setError('Password is required');
-            return false;
-        }
-        if (userData.password.length < 6) {
-            setError('Password must be at least 6 characters long');
-            return false;
-        }
-        if (userData.password !== userData.confirmPassword) {
-            setError('Passwords do not match');
-            return false;
-        }
-        return true;
+    const validate = () => {
+        const newErrors = {};
+
+        if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
+        if (!formData.username.trim()) newErrors.username = "Username is required";
+
+        if (!formData.email.trim()) newErrors.email = "Email is required";
+        else if (!emailRegex.test(formData.email)) newErrors.email = "Email is invalid";
+
+        if (!formData.password) newErrors.password = "Password is required";
+        else if (formData.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+
+        if (!formData.confirmPassword)
+        newErrors.confirmPassword = "Please confirm your password";
+        else if (formData.password !== formData.confirmPassword)
+        newErrors.confirmPassword = "Passwords do not match";
+
+        return newErrors;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
-        if (!validateForm()) {
-            return;
-        }
-
+        setFirebaseError(null);
+        const validationErrors = validate();
+        setErrors(validationErrors);
+    
+        if (Object.keys(validationErrors).length === 0) {
         setIsLoading(true);
-        setError('');
-
         try {
-            // For now, simulate a successful signup
-            // Replace this with your actual registration logic
+            console.log('Creating user...');
+            const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+            const user = userCredential.user;
             
-            // Simulate API delay
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // Mock successful signup response
-            const newUser = {
-                id: Date.now().toString(),
-                email: userData.email,
-                fullName: userData.fullName,
-                username: userData.username,
-                image: `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.fullName)}&background=0891b2&color=fff&size=150`,
-                token: 'mock-jwt-token-' + Date.now()
-            };
-
-            // Update store with user data (this automatically sets isAuthenticated to true)
-            useChatStore.getState().setCurrentUser(newUser);
-            
-            console.log('Signup successful:', newUser);
-
-            // TODO: Replace the above mock code with your actual API call:
-            /*
-            const response = await fetch('YOUR_SIGNUP_API_ENDPOINT', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    fullName: userData.fullName,
-                    username: userData.username,
-                    email: userData.email,
-                    password: userData.password
-                })
+            console.log('User created:', user.uid);
+            console.log('Auth state:', user.uid ? 'Authenticated' : 'Not authenticated');
+    
+            // Add a small delay to ensure auth state is properly set
+            await new Promise(resolve => setTimeout(resolve, 100));
+    
+            console.log('Attempting to write to Firestore...');
+            await setDoc(doc(db, "users", user.uid), {
+            fullName: formData.fullName,
+            username: formData.username,
+            email: formData.email,
+            createdAt: new Date().toISOString()
             });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // Successful signup - update store
-                useChatStore.getState().setCurrentUser(data.user);
+            
+            console.log('Firestore write successful');
+    
+            await sendEmailVerification(user);
+            toast.success("Verification email sent! Check your inbox.");
+            
+            // Use callback if provided, otherwise navigate directly
+            if (onVerificationRequired) {
+            onVerificationRequired(formData.email);
             } else {
-                setError(data.message || 'Registration failed. Please try again.');
+            navigate("/email-verification", { 
+                state: { email: formData.email } 
+            });
             }
-            */
         } catch (error) {
-            console.error('Signup error:', error);
-            setError('Registration failed. Please try again.');
+            console.error('Full error object:', error);
+            
+            if (error instanceof FirebaseError) {
+            console.error("Firebase error:", error.code, error.message);
+    
+            let message = "An unexpected error occurred.";
+            switch (error.code) {
+                case "auth/email-already-in-use":
+                message = "This email is already registered. Try logging in.";
+                break;
+                case "auth/invalid-email":
+                message = "Email address is invalid.";
+                break;
+                case "auth/weak-password":
+                message = "Password must be at least 6 characters.";
+                break;
+                case "permission-denied":
+                message = "Permission denied. Please try again.";
+                break;
+                case "unavailable":
+                message = "Service temporarily unavailable. Please try again.";
+                break;
+            }
+    
+            setFirebaseError(message);
+            } else {
+            console.error("Unexpected error:", error);
+            setFirebaseError("An unexpected error occurred.");
+            }
         } finally {
             setIsLoading(false);
         }
+        }
     };
+
+    const ErrorMsg = ({ message }) =>
+        message ? <p className="mt-1 text-xs text-red-500">{message}</p> : null;
 
     return (
         <div className="min-h-screen bg-gradient-to-r from-gray-950 via-cyan-900 to-cyan-800 flex items-center justify-center p-4">
