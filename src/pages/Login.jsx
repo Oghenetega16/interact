@@ -5,7 +5,6 @@ import { FcGoogle } from 'react-icons/fc';
 import { FaHandshake } from 'react-icons/fa';
 import { auth, googleProvider } from ".././services/firebase";
 import { signInWithEmailAndPassword } from 'firebase/auth';
-import useChatStore from "../store/chatStore";
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +42,7 @@ export default function Login() {
             } else {
                 navigate('/chat');
             }
-            
+
         } catch (error) {
             if (error) {
                 if (error.code === 'auth/user-not-found') {

@@ -9,7 +9,7 @@ import { FirebaseError } from "firebase/app";
 import { doc, setDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 
-export default function Signup() {
+export default function Signup({ onVerificationRequired }) {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -144,9 +144,9 @@ export default function Signup() {
                         <p className="">Join the conversation &mdash; it all starts with a hello.</p>
                     </div>
 
-                    {error && (
+                    {errors && (
                         <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                            <p className="text-red-600 text-sm">{error}</p>
+                            <p className="text-red-600 text-sm">{errors}</p>
                         </div>
                     )}
 
@@ -159,7 +159,7 @@ export default function Signup() {
                                 <input
                                     type="text"
                                     name="fullName"
-                                    value={userData.fullName}
+                                    value={formData.fullName}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-950 focus:border-transparent"
                                     placeholder="Enter your full name"
@@ -177,7 +177,7 @@ export default function Signup() {
                                 <input
                                     type="text"
                                     name="username"
-                                    value={userData.username}
+                                    value={formData.username}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-950 focus:border-transparent"
                                     placeholder="Choose a username"
@@ -195,7 +195,7 @@ export default function Signup() {
                                 <input
                                     type="email"
                                     name="email"
-                                    value={userData.email}
+                                    value={formData.email}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-950 focus:border-transparent"
                                     placeholder="Enter your email"
@@ -213,7 +213,7 @@ export default function Signup() {
                                 <input
                                     type={showPassword ? "text" : "password"}
                                     name="password"
-                                    value={userData.password}
+                                    value={formData.password}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-950 focus:border-transparent"
                                     placeholder="Create a password"
@@ -247,7 +247,7 @@ export default function Signup() {
                                 <input
                                     type={showConfirmPassword ? "text" : "password"}
                                     name="confirmPassword"
-                                    value={userData.confirmPassword}
+                                    value={formData.confirmPassword}
                                     onChange={handleChange}
                                     className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-950 focus:border-transparent"
                                     placeholder="Confirm your password"
@@ -285,6 +285,7 @@ export default function Signup() {
                                 'Create Account'
                             )}
                         </button>
+                        {firebaseError && <p className="mt-4 text-sm text-red-400 text-center">{firebaseError}</p>}
                     </form>
                     
                     <div className="text-center mt-6">
