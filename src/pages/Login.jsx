@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { FaHandshake } from 'react-icons/fa';
 import { auth, googleProvider } from ".././services/firebase";
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
@@ -36,12 +36,7 @@ export default function Login() {
                 return;
             }
 
-            // Use callback if provided, otherwise navigate directly
-            if (onLoginSuccess) {
-                onLoginSuccess();
-            } else {
-                navigate('/chat');
-            }
+            navigate('/chat');
 
         } catch (error) {
             if (error) {
@@ -60,10 +55,21 @@ export default function Login() {
             }
     };
 
-    const handleGoogleLogin = () => {
-        // Implement Google OAuth login
-        console.log('Google login not implemented yet');
-        setError('Google login not implemented yet');
+    const handleGoogleLogin = async () => {
+    setError(null); // Clear previous errors
+
+    try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+
+        // Optional: Check if the user is new or existing, or store data in Firestore
+        console.log('Google login success:', user);
+        navigate('/chat'); // Redirect to dashboard or chat page
+
+    } catch (error) {
+        console.error('Google login error:', error);
+        setError('Failed to sign in with Google. Please try again.');
+    }
     };
 
     return (
@@ -184,8 +190,8 @@ export default function Login() {
                             disabled={isLoading}
                             className="w-full py-3 mb-5 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center cursor-pointer"
                         >
-                            <FcGoogle className="w-5 h-5 mr-2" />
                             Sign in with Google
+                            <FcGoogle className="w-5 h-5 ml-2" />
                         </button>
                     </form>
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Mail, Brain } from "lucide-react";
+import { Mail } from "lucide-react";
+import { FaHandshake } from 'react-icons/fa';
 import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../services/firebase"; 
 import { FirebaseError } from "firebase/app";
@@ -41,10 +42,10 @@ export default function ForgotPassword() {
                 <div className="bg-white rounded-2xl p-8 shadow-2xl">
                     <div className="text-center mb-8">
                         <div className="flex items-center justify-center mb-4">
-                            <div className="p-2 bg-purple-600 rounded-xl mr-3">
-                                <Brain className="w-6 h-6 text-white" />
+                            <div className="p-2 bg-cyan-950 rounded-xl mr-3">
+                                <FaHandshake className="w-6 h-6 text-white" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-900">CodeMentor AI</h2>
+                            <h2 className="text-2xl text-cyan-950 font-bold">Interact</h2>
                         </div>
                         <p className="text-black">Enter your email to receive a reset link.</p>
                     </div>
@@ -69,7 +70,7 @@ export default function ForgotPassword() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full py-3 bg-purple-600 text-white cursor-pointer rounded-xl font-semibold hover:bg-purple-700 transition-colors"
+                            className="w-full py-3 mb-5 bg-gray-800 text-white rounded-xl font-semibold hover:bg-gray-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center cursor-pointer"
                         >
                             {loading ? "Sending..." : "Send Reset Link"}
                         </button>

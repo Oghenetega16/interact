@@ -37,52 +37,52 @@ export default function EmailVerification({ email: propEmail, onBack }) {
         return () => unsubscribe();
     }, [propEmail, locationState?.email]);
 
-  // Set email from various sources
-  useEffect(() => {
-    if (propEmail) {
-      setEmail(propEmail);
-    } else if (locationState?.email) {
-      setEmail(locationState.email);
-    } else if (authUser?.email) {
-      setEmail(authUser.email);
-    }
-  }, [propEmail, locationState?.email, authUser]);
+    // Set email from various sources
+    useEffect(() => {
+        if (propEmail) {
+            setEmail(propEmail);
+        } else if (locationState?.email) {
+            setEmail(locationState.email);
+        } else if (authUser?.email) {
+            setEmail(authUser.email);
+        }
+    }, [propEmail, locationState?.email, authUser]);
 
-  // Initialize cooldown from localStorage on mount
-  useEffect(() => {
-    const storedLastResend = localStorage.getItem(STORAGE_KEY);
-    if (storedLastResend) {
-      const lastResend = parseInt(storedLastResend, 10);
-      const now = Date.now();
-      const timeSinceLastResend = now - lastResend;
-      
-      if (timeSinceLastResend < RESEND_COOLDOWN) {
-        const remainingCooldown = RESEND_COOLDOWN - timeSinceLastResend;
-        setLastResendTime(lastResend);
-        setResendCooldown(remainingCooldown);
-      }
-    }
-  }, []);
+    // Initialize cooldown from localStorage on mount
+    useEffect(() => {
+        const storedLastResend = localStorage.getItem(STORAGE_KEY);
+        if (storedLastResend) {
+            const lastResend = parseInt(storedLastResend, 10);
+            const now = Date.now();
+            const timeSinceLastResend = now - lastResend;
+        
+            if (timeSinceLastResend < RESEND_COOLDOWN) {
+                const remainingCooldown = RESEND_COOLDOWN - timeSinceLastResend;
+                setLastResendTime(lastResend);
+                setResendCooldown(remainingCooldown);
+            }
+        }
+    }, []);
 
-  // Handle cooldown timer with proper cleanup
-  useEffect(() => {
-    let timer;
-    
-    if (resendCooldown > 0) {
-      timer = setTimeout(() => {
-        setResendCooldown(prev => Math.max(0, prev - 1000));
-      }, 1000);
-    }
-    
-    return () => {
-      if (timer) clearTimeout(timer);
-    };
-  }, [resendCooldown]);
+    // Handle cooldown timer with proper cleanup
+    useEffect(() => {
+        let timer;
+        
+        if (resendCooldown > 0) {
+            timer = setTimeout(() => {
+                setResendCooldown(prev => Math.max(0, prev - 1000));
+            }, 1000);
+        }
+        
+        return () => {
+            if (timer) clearTimeout(timer);
+        };
+    }, [resendCooldown]);
 
-  // Function to check if email is verified
-  const checkEmailVerification = async () => {
-    setIsCheckingVerification(true);
-    setResendMessage('');
+    // Function to check if email is verified
+    const checkEmailVerification = async () => {
+        setIsCheckingVerification(true);
+        setResendMessage('');
     
     try {
       const user = auth?.currentUser;
@@ -316,15 +316,20 @@ export default function EmailVerification({ email: propEmail, onBack }) {
           {/* Resend Message */}
           {resendMessage && (
             <div className={`p-3 rounded-lg text-sm mb-4 ${
-              resendMessage.includes('successfully') || resendMessage.includes('verified')
-                ? 'bg-green-50 text-green-800' 
-                : resendMessage.includes('wait') || resendMessage.includes('Wait')
-                  ? 'bg-yellow-50 text-yellow-800'
-                  : 'bg-red-50 text-red-800'
+                typeof resendMessage === 'string'
+                ? resendMessage.toLowerCase().includes('successfully') || resendMessage.toLowerCase().includes('verified')
+                    ? 'bg-green-50 text-green-800'
+                    : resendMessage.toLowerCase().includes('wait')
+                    ? 'bg-yellow-50 text-yellow-800'
+                    : 'bg-red-50 text-red-800'
+                : 'bg-red-50 text-red-800'
             }`}>
-              {resendMessage}
+                {typeof resendMessage === 'string'
+                ? resendMessage
+                : JSON.stringify(resendMessage)}
             </div>
-          )}
+        )}
+
           
           {/* Back Button */}
           {onBack ? (
