@@ -10,16 +10,7 @@ export default function ChatBox() {
     const inputRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
-    const { 
-        selectedChat, 
-        getChatMessages, 
-        getUsersTyping, 
-        pendingMessages, 
-        failedMessages, 
-        isConnected,
-        currentUser,
-        selectChat
-    } = useChatStore();
+    const { selectedChat, getChatMessages, getUsersTyping, pendingMessages, failedMessages, isConnected,currentUser,selectChat } = useChatStore();
 
     const { sendMessage, sendTyping, retryMessage } = useSocket() || {};
 
