@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "./services/firebase";
 import useChatStore from "./store/chatStore";
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Suspense, lazy } from 'react';
@@ -30,7 +29,7 @@ export default function App() {
   const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged((user) => {
       setCurrentUser(user);
       setIsAuthLoading(false); // Auth state has been determined
     });
@@ -65,6 +64,7 @@ export default function App() {
             {/* Password reset routes */}
             <Route path="/forgotpassword" element={<ForgotPassword />} />
             <Route path="/email-verification" element={<EmailVerification />} />
+            <Route path="/chat" element={<Chat />} />
 
             {/* Protected chat route */}
             <Route 
